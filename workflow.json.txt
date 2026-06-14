@@ -1,0 +1,1077 @@
+{
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "c41cd242-7fa4-48d2-8c59-71e39addd830",
+        "options": {}
+      },
+      "id": "ccc60fd6-62e2-4463-853f-36851430b236",
+      "name": "LINE Webhook3",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        -2336,
+        256
+      ],
+      "webhookId": "c41cd242-7fa4-48d2-8c59-71e39addd830"
+    },
+    {
+      "parameters": {
+        "url": "=https://api-data.line.me/v2/bot/message/{{ $json.body.events[0].message.id }}/content",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {}
+          ]
+        },
+        "options": {
+          "response": {
+            "response": {}
+          }
+        }
+      },
+      "id": "faf16d78-bf4b-485c-864b-28c83f6fdb01",
+      "name": "Get Line File4",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -1488,
+        240
+      ],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "H2N9YHhoZvl5rflC",
+          "name": "Header Auth account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "text": "={{ $json.content.parts[0].text }}",
+        "attributes": {
+          "attributes": [
+            {
+              "name": "payer_name",
+              "description": "The name of the recipient or merchant issuing the invoice, usually found after the 'From' label. It's usually the first name listed, following the bank's name."
+            },
+            {
+              "name": "Recipient_name",
+              "description": "The name of the recipient (or transferee) to whom the invoice is issued, typically following the word 'To'. It's usually the second name listed, following the bank's name."
+            },
+            {
+              "name": "invoice_date",
+              "type": "date",
+              "description": "The invoice (or receipt) date in YYYY-MM-DD format, typically following the phrase 'Transaction Date'."
+            },
+            {
+              "name": "total_amount",
+              "description": "Total net amount: Numbers only. No currency symbols or commas. Usually follows 'Amount'."
+            },
+            {
+              "name": "activity",
+              "description": "The specific event, occasion, trip, project, or context associated with the transaction (e.g., งานแต่ง, ทริปญี่ปุ่น, ปาร์ตี้ปีใหม่, เลี้ยงสายรหัส). If no specific event is mentioned, return null. It is usually placed after the word \"บันทึก\" or \"บันทึกช่วยจำ\""
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.informationExtractor",
+      "typeVersion": 1.2,
+      "position": [
+        -752,
+        240
+      ],
+      "id": "63ab999d-7b57-4ddb-ad05-06e55a3e614f",
+      "name": "Information Extractor3"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.line.me/v2/bot/message/reply",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{\nJSON.stringify({\n  // 1. ดึง Reply Token จาก Webhook\n  replyToken: $('LINE Webhook3').item.json.body.events[0].replyToken, \n  messages: [\n    {\n      type: \"text\",\n      text: `สรุปข้อมูล\nผู้ชำระเงิน: ${$json.output.payer_name || '-'}\nผู้รับเงิน: ${$json.output.Recipient_name || '-'}\nวันที่: ${$json.output.invoice_date || '-'}\nจำนวนเงิน: ${$json.output.total_amount || '-'}\nกิจกรรม: ${$json.output.activity || '-'}`\n    }\n  ]\n})\n}}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        -192,
+        16
+      ],
+      "id": "499c9bb0-df8d-4d84-ac45-36afa4e423ff",
+      "name": "HTTP Request9",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "H2N9YHhoZvl5rflC",
+          "name": "Header Auth account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "4f8288b7-ac97-4676-a3a3-13563d21e9b7",
+              "leftValue": "={{ $json.body.events[0].message.type }}",
+              "rightValue": "=image",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            },
+            {
+              "id": "1d366fc6-fa45-4798-89bc-57ac6e29c381",
+              "leftValue": "={{ $json.body.events[0].message.type }}",
+              "rightValue": "file",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "or"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        -2048,
+        256
+      ],
+      "id": "80df1dc8-f1c4-4b0f-b8d6-17c2f0bc99fb",
+      "name": "If6"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "8b032962-d9ea-410f-88f0-8085d5c35d4a",
+              "leftValue": "={{ $json.output.intent }}",
+              "rightValue": "view_summary",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        -1232,
+        1344
+      ],
+      "id": "98464724-982f-419c-8e60-f7f0a8fb6a4f",
+      "name": "If7"
+    },
+    {
+      "parameters": {
+        "modelName": "models/gemini-embedding-001"
+      },
+      "type": "@n8n/n8n-nodes-langchain.embeddingsGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        -80,
+        1792
+      ],
+      "id": "e5a37b17-d68c-45c9-8541-b464008ef3ab",
+      "name": "Embeddings Google Gemini3",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "mzHmkrA7zZeIYfT6",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "insert",
+        "tableName": {
+          "__rl": true,
+          "value": "documents2",
+          "mode": "list",
+          "cachedResultName": "documents2"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.vectorStoreSupabase",
+      "typeVersion": 1.3,
+      "position": [
+        -192,
+        240
+      ],
+      "id": "e501313f-ed6e-485f-916e-9edf8d637926",
+      "name": "Supabase Vector Store3",
+      "notesInFlow": true,
+      "credentials": {
+        "supabaseApi": {
+          "id": "Nyh2hOIM6TPtjs5R",
+          "name": "Supabase account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsonMode": "expressionData",
+        "jsonData": "={{ $json.pageContent }}\ntimestamp : {{ $json.metadata.timestamp }}",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.documentDefaultDataLoader",
+      "typeVersion": 1.1,
+      "position": [
+        -48,
+        432
+      ],
+      "id": "188999a8-e578-4deb-91da-fc2ea087ca29",
+      "name": "Default Data Loader3"
+    },
+    {
+      "parameters": {
+        "jsCode": "// 1. ดึงข้อมูลจาก Node ก่อนหน้า (Information Extractor)\nconst data = $input.item.json.output;\n\n// ตรวจสอบว่ามีข้อมูลหรือไม่ (กัน Error กรณีข้อมูลว่างเปล่า)\nif (!data) {\n  return { json: { pageContent: \"No data extracted\", metadata: {} } };\n}\n\n// 2. สร้างข้อความ String จากข้อมูลที่แยกส่วนมา (เพื่อเตรียม Embed)\n// เราต้องเอาหัวข้อต่างๆ มารวมกันเป็นก้อนข้อความเดียว\nconst contentString = `ข้อมูลใบเสร็จ:\nผู้ชำระเงิน: ${data.payer_name || '-'}\nผู้รับเงิน: ${data.Recipient_name || '-'}\nวันที่: ${data.invoice_date || '-'}\nยอดรวมสุทธิ: ${data.total_amount || '-'} บาท`;\n\nreturn {\n  json: {\n    // หัวใจสำคัญ: ส่งค่าออกไปในชื่อ \"pageContent\" เหมือนเดิม\n    pageContent: contentString, \n    metadata: {\n      source: \"receipt_analysis\", // ตั้งชื่อ source ให้รู้ว่าเป็นใบเสร็จ\n      timestamp: new Date().toISOString()\n    }\n  }\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -400,
+        240
+      ],
+      "id": "a0edb5b0-0a32-435e-9cee-cfbccf30543d",
+      "name": "Code in JavaScript3"
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "models/gemini-flash-lite-latest",
+          "mode": "list",
+          "cachedResultName": "models/gemini-flash-lite-latest"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "=You are a financial expert dedicated to providing consultation and advice to users from {{ $json.output.text }}. Please reply in Thai."
+            }
+          ]
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.googleGemini",
+      "typeVersion": 1.1,
+      "position": [
+        -1040,
+        1824
+      ],
+      "id": "a060337f-0b48-4469-8f02-8359fb152378",
+      "name": "Message a model4",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "mzHmkrA7zZeIYfT6",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.line.me/v2/bot/message/reply",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{\n{\n  \"replyToken\": $('LINE Webhook3').item.json.body.events[0].replyToken, // <--- ต้องมีลูกน้ำ (,) ตรงนี้ครับ\n  \"messages\": [\n    {\n      \"type\": \"text\",\n      \"text\": $json.content.parts[0].text\n    }\n  ]\n}\n}}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        -704,
+        1824
+      ],
+      "id": "f35248d5-4971-472c-9a5e-081c6d6db252",
+      "name": "HTTP Request10",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "H2N9YHhoZvl5rflC",
+          "name": "Header Auth account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Answer the question:\n{{ $('LINE Webhook3').item.json.body.events[0].message.text }}\nIf the question is about past expenses, use the 'Supabase Vecter Search' tool.\nnow : {{ $now }}.\n\nreplyToken: {{ $('LINE Webhook3').item.json.body.events[0].replyToken }}\n\nOutput as:\n{\n  \"reply\": \"xxx\",\n  \"replyToken\": \"xxx\"\n}\n\nPlease reply in Thai.",
+        "hasOutputParser": true,
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        -880,
+        1328
+      ],
+      "id": "ed03163d-b40b-4dbc-a935-d1cee0abca94",
+      "name": "AI Agent4"
+    },
+    {
+      "parameters": {
+        "modelName": "models/gemini-pro-latest",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        -896,
+        1552
+      ],
+      "id": "e6fdc0a5-7676-4c9e-8b0d-3c4939d22cf0",
+      "name": "Google Gemini Chat Model10",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "mzHmkrA7zZeIYfT6",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsonSchemaExample": "{\n  \"reply\": \"xxx\",\n  \"replyToken\": \"xxx\"\n}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.3,
+      "position": [
+        -448,
+        1552
+      ],
+      "id": "3ea20d38-d29c-4eeb-b7f7-615d68b62557",
+      "name": "Structured Output Parser5"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.line.me/v2/bot/message/reply",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{\n{\n  \"replyToken\": $('LINE Webhook3').item.json.body.events[0].replyToken, // <--- ต้องมีลูกน้ำ (,) ตรงนี้ครับ\n  \"messages\": [\n    {\n      \"type\": \"text\",\n      \"text\": $json.output.reply\n    }\n  ]\n}\n}}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        -448,
+        1328
+      ],
+      "id": "132fd9d7-b1d9-4789-b7aa-85dc617a646a",
+      "name": "HTTP Request11",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "H2N9YHhoZvl5rflC",
+          "name": "Header Auth account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "retrieve-as-tool",
+        "toolDescription": "work with data in vecter db.",
+        "tableName": {
+          "__rl": true,
+          "value": "documents2",
+          "mode": "list",
+          "cachedResultName": "documents2"
+        },
+        "topK": 10,
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.vectorStoreSupabase",
+      "typeVersion": 1.3,
+      "position": [
+        -752,
+        1552
+      ],
+      "id": "cc88f72f-ec72-4cf5-8d9e-aea91cdc4d72",
+      "name": "Supabase Vecter Search3",
+      "credentials": {
+        "supabaseApi": {
+          "id": "Nyh2hOIM6TPtjs5R",
+          "name": "Supabase account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "modelName": "models/gemini-2.0-flash-lite",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        -752,
+        464
+      ],
+      "id": "76b7f73a-3953-468c-82b1-b1b0c14625a4",
+      "name": "Google Gemini Chat Model12",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "mzHmkrA7zZeIYfT6",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Role: Financial AI Classifier. Classify input into exactly ONE intent. Output ONLY valid JSON. \"data\" represents the core message the user wants to convey.\n\nIntents:\n1. record_expense: Log new expenses. Input contains item+amount, an image (slip/receipt), or complaints about spending.\n2. view_summary: Retrieve past/current spending totals. Contains timeframes (today, last month). Lacks specific monetary amounts.\n3. financial_advice: Ask for financial tips, investment, debt management, or savings advice.(It's often a question.)\n4. general_chat: Catch-all for greetings, small talk, insults, or non-financial topics.\n\nFormat: {\"intent\": \"intent_name\", \"data\": \"core info or null\", \"text\": {{ $json.body.events[0].message.text }}}\n\nExamples:\nU: \"Coffee 65\"\nA: {\"intent\": \"record_expense\", \"data\": \"Coffee 65\"}\n\nU: \"Electricity 1200, water 200\"\nA: {\"intent\": \"record_expense\", \"data\": \"Electricity 1200, water 200\"}\n\nU: [Image]\nA: {\"intent\": \"record_expense\", \"data\": \"image_slip\"}\n\nU: \"Summary for Feb\"\nA: {\"intent\": \"view_summary\", \"data\": \"Feb\"}\n\nU: \"How much did I spend yesterday?\"\nA: {\"intent\": \"view_summary\", \"data\": \"Yesterday\"}\n\nU: \"Manage 15k salary?\"\nA: {\"intent\": \"financial_advice\", \"data\": \"Manage 15k salary\"}\n\nU: \"I have credit card debt, help\"\nA: {\"intent\": \"financial_advice\", \"data\": \"Clear credit card debt\"}\n\nU: \"Hello admin\"\nA: {\"intent\": \"general_chat\", \"data\": \"Greeting\"} ",
+        "hasOutputParser": true,
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        -1760,
+        624
+      ],
+      "id": "8fde0901-548b-400a-b47c-eec40b4739ba",
+      "name": "AI Agent6",
+      "alwaysOutputData": false
+    },
+    {
+      "parameters": {
+        "modelName": "models/gemini-flash-lite-latest",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        -1776,
+        864
+      ],
+      "id": "7771b7c6-833c-418c-afdb-1a2f73d4bc0f",
+      "name": "Google Gemini Chat Model14",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "mzHmkrA7zZeIYfT6",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsonSchemaExample": "{\n  \"intent\": \"ชื่อ_intent\",\n  \"extracted_data\": \"ข้อมูลที่ดึงมาได้ หรือ null\",\n  \"text\": \"ข้อความจาก text\"\n}",
+        "autoFix": "="
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.3,
+      "position": [
+        -1616,
+        864
+      ],
+      "id": "3a736a57-ecb1-490f-82c1-55aa41165528",
+      "name": "Structured Output Parser7"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "b77175a0-cac5-4056-baec-36d9e40c52d2",
+              "leftValue": "={{ $json.output.intent }}",
+              "rightValue": "=record_expense",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        -1264,
+        864
+      ],
+      "id": "85fd95a3-8157-4e9c-8002-d6d6072daf1f",
+      "name": "If8"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "543c8aa4-be75-425a-9a97-0f4cfa99dd34",
+              "leftValue": "={{ $json.output.intent }}",
+              "rightValue": "general_chat",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            },
+            {
+              "id": "e1cacff0-e6c4-4b55-b1b3-6f1423062a63",
+              "leftValue": "={{ $json.output.intent }}",
+              "rightValue": "financial_advice",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "or"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        -1232,
+        1840
+      ],
+      "id": "9b5208cc-6fe6-4cb2-880c-d56a9364b473",
+      "name": "If9"
+    },
+    {
+      "parameters": {
+        "text": "={{ $json.output.text }} ",
+        "attributes": {
+          "attributes": [
+            {
+              "name": "payer_name",
+              "description": "The name of the recipient or merchant issuing the invoice, usually found after the 'From' label."
+            },
+            {
+              "name": "Recipient_name",
+              "description": "The name of the recipient (or transferee) to whom the invoice is issued, typically following the word 'To'."
+            },
+            {
+              "name": "invoice_date",
+              "type": "date",
+              "description": "The invoice (or receipt) date in YYYY-MM-DD format, typically following the phrase 'Transaction Date'."
+            },
+            {
+              "name": "total_amount",
+              "description": "Total net amount: Numbers only. No currency symbols or commas. Usually follows 'Amount'."
+            },
+            {
+              "name": "activity",
+              "description": "The specific event, occasion, trip, project, or context associated with the transaction (e.g., งานแต่ง, ทริปญี่ปุ่น, ปาร์ตี้ปีใหม่, เลี้ยงสายรหัส). If no specific event is mentioned, return null."
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.informationExtractor",
+      "typeVersion": 1.2,
+      "position": [
+        -992,
+        848
+      ],
+      "id": "e9e71ade-08e2-4264-ab83-8574ab1e98fc",
+      "name": "Information Extractor4"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.line.me/v2/bot/message/reply",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{\nJSON.stringify({\n  // 1. ดึง Reply Token จาก Webhook\n  replyToken: $('LINE Webhook3').item.json.body.events[0].replyToken, \n  messages: [\n    {\n      type: \"text\",\n      text: `สรุปข้อมูล\nผู้ชำระเงิน: ${$json.output.payer_name || '-'}\nผู้รับเงิน: ${$json.output.Recipient_name || '-'}\nวันที่: ${$json.output.invoice_date || '-'}\nจำนวนเงิน: ${$json.output.total_amount || '-'}\nกิจกรรม: ${$json.output.activity || '-'}`\n    }\n  ]\n})\n}}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        -416,
+        640
+      ],
+      "id": "1bf9d3f6-5acb-4b0b-b3cf-69644fcc304a",
+      "name": "HTTP Request12",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "H2N9YHhoZvl5rflC",
+          "name": "Header Auth account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "insert",
+        "tableName": {
+          "__rl": true,
+          "value": "documents2",
+          "mode": "list",
+          "cachedResultName": "documents2"
+        },
+        "embeddingBatchSize": 5000,
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.vectorStoreSupabase",
+      "typeVersion": 1.3,
+      "position": [
+        -416,
+        864
+      ],
+      "id": "49c91d9c-49aa-4e1b-9c69-70ce518e59f8",
+      "name": "Supabase Vector Store4",
+      "notesInFlow": true,
+      "credentials": {
+        "supabaseApi": {
+          "id": "Nyh2hOIM6TPtjs5R",
+          "name": "Supabase account"
+        }
+      },
+      "notes": "Always Output Data"
+    },
+    {
+      "parameters": {
+        "jsonMode": "expressionData",
+        "jsonData": "={{ $json.pageContent }}\ntimestamp : {{ $json.metadata.timestamp }}",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.documentDefaultDataLoader",
+      "typeVersion": 1.1,
+      "position": [
+        -240,
+        1072
+      ],
+      "id": "ff40f2ed-82bf-473d-98ff-89f71d148962",
+      "name": "Default Data Loader4"
+    },
+    {
+      "parameters": {
+        "jsCode": "// 1. ดึงข้อมูลจาก Node ก่อนหน้า (Information Extractor)\nconst data = $input.item.json.output;\n\n// ตรวจสอบว่ามีข้อมูลหรือไม่ (กัน Error กรณีข้อมูลว่างเปล่า)\nif (!data) {\n  return { json: { pageContent: \"No data extracted\", metadata: {} } };\n}\n\n// 2. สร้างข้อความ String จากข้อมูลที่แยกส่วนมา (เพื่อเตรียม Embed)\n// เราต้องเอาหัวข้อต่างๆ มารวมกันเป็นก้อนข้อความเดียว\nconst contentString = `ข้อมูลใบเสร็จ:\nผู้ชำระเงิน: ${$input.first().json.output.payer_name || '-'}\nผู้รับเงิน: ${$input.first().json.output.Recipient_name || '-'}\nวันที่: ${$input.first().json.output.invoice_date || '-'}\nยอดรวมสุทธิ: ${$input.first().json.output.total_amount || '-'} บาท\nกิจกรรม: ${$input.first().json.output.activity || '-'} `;\n\n  return {\n  json: {\n    // หัวใจสำคัญ: ส่งค่าออกไปในชื่อ \"pageContent\" เหมือนเดิม\n    pageContent: contentString, \n    metadata: {\n      source: \"receipt_analysis\", // ตั้งชื่อ source ให้รู้ว่าเป็นใบเสร็จ\n      timestamp: new Date().toISOString()\n    }\n  }\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -624,
+        864
+      ],
+      "id": "48cc5049-69a1-4b34-b0ed-5dc9d3618bbb",
+      "name": "Code in JavaScript4"
+    },
+    {
+      "parameters": {
+        "operation": "information"
+      },
+      "type": "n8n-nodes-base.editImage",
+      "typeVersion": 1,
+      "position": [
+        -1296,
+        240
+      ],
+      "id": "65407d96-bda8-4ac6-aec7-55d4fa9d3858",
+      "name": "Edit Image5"
+    },
+    {
+      "parameters": {
+        "modelName": "models/gemini-flash-latest",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        -992,
+        1088
+      ],
+      "id": "1949b0f7-025d-43a6-a9ef-55286b78e651",
+      "name": "Google Gemini Chat Model15",
+      "alwaysOutputData": false,
+      "credentials": {
+        "googlePalmApi": {
+          "id": "mzHmkrA7zZeIYfT6",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "image",
+        "operation": "analyze",
+        "modelId": {
+          "__rl": true,
+          "value": "models/gemini-flash-lite-latest",
+          "mode": "list",
+          "cachedResultName": "models/gemini-flash-lite-latest"
+        },
+        "text": "Role: Expert OCR System. Your task is to extract ALL visible text from the provided image exactly as it appears.\nRules:\n1. Extract text exactly as written. Preserve original spelling, numbers, and punctuation.\n2. Maintain the original line breaks and layout as much as possible.\n3. DO NOT hallucinate, summarize, or guess missing information.\n4. DO NOT include any conversational filler (e.g., \"Here is the text\"). Output ONLY the extracted text.\n5. If the image contains no readable text, output strictly \"UNREADABLE\". (Please answer in Thai.)",
+        "inputType": "binary",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.googleGemini",
+      "typeVersion": 1,
+      "position": [
+        -1088,
+        64
+      ],
+      "id": "dc8cab20-c49c-4521-82e7-c9fc50bdace0",
+      "name": "Analyze an image4",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "mzHmkrA7zZeIYfT6",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "LINE Webhook3": {
+      "main": [
+        [
+          {
+            "node": "If6",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Line File4": {
+      "main": [
+        [
+          {
+            "node": "Edit Image5",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Information Extractor3": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript3",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "HTTP Request9",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If6": {
+      "main": [
+        [
+          {
+            "node": "Get Line File4",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "AI Agent6",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If7": {
+      "main": [
+        [
+          {
+            "node": "AI Agent4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Embeddings Google Gemini3": {
+      "ai_embedding": [
+        [
+          {
+            "node": "Supabase Vector Store3",
+            "type": "ai_embedding",
+            "index": 0
+          },
+          {
+            "node": "Supabase Vecter Search3",
+            "type": "ai_embedding",
+            "index": 0
+          },
+          {
+            "node": "Supabase Vector Store4",
+            "type": "ai_embedding",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Default Data Loader3": {
+      "ai_document": [
+        [
+          {
+            "node": "Supabase Vector Store3",
+            "type": "ai_document",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript3": {
+      "main": [
+        [
+          {
+            "node": "Supabase Vector Store3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Message a model4": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request10",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent4": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request11",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model10": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent4",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Structured Output Parser5": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "AI Agent4",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Supabase Vecter Search3": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent4",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model12": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Information Extractor3",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent6": {
+      "main": [
+        [
+          {
+            "node": "If7",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "If8",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "If9",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model14": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent6",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Structured Output Parser7": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "AI Agent6",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If8": {
+      "main": [
+        [
+          {
+            "node": "Information Extractor4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If9": {
+      "main": [
+        [
+          {
+            "node": "Message a model4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Information Extractor4": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript4",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "HTTP Request12",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Default Data Loader4": {
+      "ai_document": [
+        [
+          {
+            "node": "Supabase Vector Store4",
+            "type": "ai_document",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript4": {
+      "main": [
+        [
+          {
+            "node": "Supabase Vector Store4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Image5": {
+      "main": [
+        [
+          {
+            "node": "Analyze an image4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model15": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Information Extractor4",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Analyze an image4": {
+      "main": [
+        [
+          {
+            "node": "Information Extractor3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "meta": {
+    "instanceId": "030779b12245564a0dd45bae15ed5e1095179015730e1eeee4366ed41dc42a1d"
+  }
+}
