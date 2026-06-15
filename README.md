@@ -110,3 +110,6 @@ To use this workflow, you need to configure the following credentials in your n8
 *Computer Science Student*
 
 Interested in Generative AI, AI Automation, OCR, and Intelligent Systems.
+
+Video link 1 : https://youtube.com/shorts/YWz6Wvssqvc
+Video link 2 : https://youtu.be/caqfiwRSNCM
