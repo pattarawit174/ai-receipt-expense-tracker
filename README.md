@@ -18,8 +18,8 @@ Users can simply upload a receipt image or type a text message, and the system w
 * **Workflow Automation:** n8n (Advanced Workflow Orchestration)
 * **Messaging Platform:** LINE Messaging API (Webhook & Reply)
 * **AI & LLMs (Google Gemini API):**
-* `gemini-flash-lite-latest` / `gemini-flash-latest` (for Vision/OCR and Data Extraction Agent)
-* `gemini-pro-latest` / `gemini-2.0-flash-lite` (for RAG and Chat Agent)
+* `gemini-flash-lite-latest`  (for Vision/OCR and Data Extraction Agent)
+* `gemini-pro-latest` / `gemini-flash-lite-latest` (for RAG and Chat Agent)
 * `gemini-embedding-001` (for Text Embeddings)
 
 
